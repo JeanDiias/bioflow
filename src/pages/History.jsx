@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { useQuery } from '@tanstack/react-query';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,7 @@ import { exportBatchPdf } from '@/lib/exportBatchPdf';
 export default function History() {
   const { data: batches, isLoading: loadingBatches } = useQuery({
     queryKey: ['batchHistory'],
-    queryFn: () => base44.entities.BatchHistory.list('-created_date', 50),
+    queryFn: () => api.entities.BatchHistory.list('-created_date', 50),
     initialData: [],
   });
 

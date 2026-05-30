@@ -1,16 +1,10 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// AuthContext — stub local (substitui o sistema de auth do Base44)
-//
-// O app original tinha requiresAuth: false, portanto nunca bloqueava o acesso.
-// Este stub mantém exatamente o mesmo comportamento: sem loading, sem erro,
-// sem redirecionamento — o usuário sempre acessa as rotas diretamente.
+// AuthContext — sem autenticação (modo local)
 //
 // FUTURA MIGRAÇÃO PARA SUPABASE:
-//   Substitua este arquivo por uma implementação real de auth usando
-//   supabase.auth.getSession() / supabase.auth.onAuthStateChange().
-//   Mantenha a mesma interface { user, isLoadingAuth, isLoadingPublicSettings,
-//   authError, navigateToLogin } para que App.jsx não precise mudar.
-// ─────────────────────────────────────────────────────────────────────────────
+//   Substitua por uma implementação real usando supabase.auth.getSession()
+//   e supabase.auth.onAuthStateChange(). Mantenha a mesma interface
+//   { user, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin }
+//   para que App.jsx não precise mudar.
 
 import { createContext, useContext } from 'react';
 

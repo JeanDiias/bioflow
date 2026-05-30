@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { useQuery } from '@tanstack/react-query';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,7 @@ import { STATUS_CONFIG } from '@/lib/reactorUtils';
 export default function ActivityTable() {
   const { data: logs, isLoading } = useQuery({
     queryKey: ['activityLogs'],
-    queryFn: () => base44.entities.ActivityLog.list('-created_date', 100),
+    queryFn: () => api.entities.ActivityLog.list('-created_date', 100),
     initialData: [],
   });
 

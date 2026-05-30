@@ -11,7 +11,7 @@ import {
 import StatusIndicator from './StatusIndicator';
 import PhaseTimer from './PhaseTimer';
 import { cn } from '@/lib/utils';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { useQuery } from '@tanstack/react-query';
 
 const ACTIONS = [
@@ -33,7 +33,7 @@ export default function ReactorDrawer({ reactor, open, onClose, onChangePhase, o
 
   const { data: logs = [] } = useQuery({
     queryKey: ['activityLogs', reactor?.reactor_id, open],
-    queryFn: () => base44.entities.ActivityLog.filter(
+    queryFn: () => api.entities.ActivityLog.filter(
       { reactor_id: reactor.reactor_id },
       '-created_date',
       50

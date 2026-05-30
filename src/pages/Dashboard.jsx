@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ReactorCard from '@/components/dashboard/ReactorCard';
 import ReactorDrawer from '@/components/dashboard/ReactorDrawer';
@@ -23,7 +23,7 @@ export default function Dashboard() {
   // Fetch reactors
   const { data: reactors = [], isLoading, isFetched } = useQuery({
     queryKey: ['bioreactors'],
-    queryFn: () => base44.entities.Bioreactor.list(),
+    queryFn: () => api.entities.Bioreactor.list(),
   });
 
   // Initialize reactors only after data is confirmed empty from the server
@@ -41,14 +41,14 @@ export default function Dashboard() {
       operator_name: '',
       phase_started_at: new Date().toISOString(),
     }));
-    await base44.entities.Bioreactor.bulkCreate(newReactors);
+    await api.entities.Bioreactor.bulkCreate(newReactors);
     queryClient.invalidateQueries({ queryKey: ['bioreactors'] });
   };
 
   // Get current user
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => api.auth.me(),
   });
 
   // Change phase mutation
@@ -62,7 +62,7 @@ export default function Dashboard() {
         const start = new Date(reactor.phase_started_at);
         const end = new Date(now);
         const totalMin = Math.round((end - start) / 60000);
-        await base44.entities.BatchHistory.create({
+        await api.entities.BatchHistory.create({
           reactor_id: reactor.reactor_id,
           batch_id: reactor.batch_id,
           operator_name: reactor.operator_name,
@@ -74,7 +74,7 @@ export default function Dashboard() {
 
       // Log the action
       const actionLabel = STATUS_CONFIG[newStatus]?.label || newStatus;
-      await base44.entities.ActivityLog.create({
+      await api.entities.ActivityLog.create({
         reactor_id: reactor.reactor_id,
         action: `Fase alterada para: ${actionLabel}`,
         operator_name: operatorName,
@@ -84,7 +84,7 @@ export default function Dashboard() {
       });
 
       // Update reactor
-      await base44.entities.Bioreactor.update(reactor.id, {
+      await api.entities.Bioreactor.update(reactor.id, {
         status: newStatus,
         phase_started_at: now,
         operator_name: newStatus === 'idle' ? '' : operatorName,
@@ -107,7 +107,7 @@ export default function Dashboard() {
   const restartReactor = useMutation({
     mutationFn: async (reactor) => {
       const now = new Date().toISOString();
-      await base44.entities.ActivityLog.create({
+      await api.entities.ActivityLog.create({
         reactor_id: reactor.reactor_id,
         action: 'Reator reiniciado manualmente',
         operator_name: user?.full_name || user?.email || 'Operador',
@@ -115,7 +115,7 @@ export default function Dashboard() {
         previous_status: reactor.status,
         new_status: 'idle',
       });
-      await base44.entities.Bioreactor.update(reactor.id, {
+      await api.entities.Bioreactor.update(reactor.id, {
         status: 'idle',
         batch_id: '',
         operator_name: '',

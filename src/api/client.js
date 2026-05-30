@@ -1,15 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// LOCAL STORAGE ADAPTER  —  substitui @base44/sdk
+// BioFlow API Client — localStorage
 //
-// Interface idêntica ao cliente Base44 original: nenhum outro arquivo precisa
-// mudar. Todos os métodos retornam Promises para manter compatibilidade com
-// os padrões async/await usados no frontend.
+// Todos os métodos retornam Promises (async/await).
 //
 // FUTURA MIGRAÇÃO PARA SUPABASE:
 //   Substitua `createEntityStore` por uma implementação que chame
 //   `supabase.from(tableName)`. A assinatura pública (list / filter /
-//   create / update / bulkCreate / delete) permanece idêntica — os
-//   componentes não precisarão mudar. Veja os comentários "SUPABASE:" abaixo.
+//   create / update / bulkCreate / delete) permanece idêntica.
+//   Veja os comentários "SUPABASE:" em cada método.
 // ─────────────────────────────────────────────────────────────────────────────
 
 function generateId() {
@@ -56,7 +54,6 @@ function createEntityStore(entityName) {
     /**
      * list(orderBy?, limit?)
      *   orderBy: "-campo" para DESC, "campo" para ASC
-     *   Exemplo: BatchHistory.list('-created_date', 50)
      *
      * SUPABASE:
      *   const desc = orderBy?.startsWith('-');
@@ -77,7 +74,6 @@ function createEntityStore(entityName) {
     /**
      * filter(filters, orderBy?, limit?)
      *   filters: objeto com pares campo:valor (todos devem coincidir)
-     *   Exemplo: ActivityLog.filter({ reactor_id: 'R-01' }, '-created_date', 50)
      *
      * SUPABASE:
      *   let q = supabase.from(entityName).select('*');
@@ -167,7 +163,7 @@ function createEntityStore(entityName) {
   };
 }
 
-export const base44 = {
+export const api = {
   entities: {
     Bioreactor:   createEntityStore('Bioreactor'),
     BatchHistory: createEntityStore('BatchHistory'),
