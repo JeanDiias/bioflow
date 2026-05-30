@@ -43,11 +43,19 @@ export default function ReactorDrawer({ reactor, open, onClose, onChangePhase, o
 
   if (!reactor) return null;
 
+  // Logs chegam em ordem DESC (mais recente primeiro).
+  // O log de 'idle' mais recente marca um reinício ou conclusão de processo.
+  // Apenas os logs CRIADOS APÓS esse evento pertencem à sessão atual.
+  const lastIdleLog = logs.find(l => l.new_status === 'idle');
+  const sessionLogs = lastIdleLog
+    ? logs.filter(l => l.created_date > lastIdleLog.created_date)
+    : logs;
+
   // Build set of statuses that have been used in this session (based on logs)
-  const usedStatuses = new Set(logs.map(l => l.new_status).filter(Boolean));
+  const usedStatuses = new Set(sessionLogs.map(l => l.new_status).filter(Boolean));
 
   // Map status → most recent operator who performed it
-  const statusOperatorMap = logs.reduce((acc, log) => {
+  const statusOperatorMap = sessionLogs.reduce((acc, log) => {
     if (log.new_status && log.operator_name && !acc[log.new_status]) {
       acc[log.new_status] = log.operator_name;
     }
