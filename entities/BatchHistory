@@ -1,0 +1,14 @@
+{
+  "name": "BatchHistory",
+  "type": "object",
+  "properties": {
+    "reactor_id": { "type": "string", "description": "Reactor identifier" },
+    "batch_id": { "type": "string", "description": "Batch identifier" },
+    "operator_name": { "type": "string", "description": "Operator who managed the batch" },
+    "started_at": { "type": "string", "format": "date-time", "description": "When the batch process started" },
+    "completed_at": { "type": "string", "format": "date-time", "description": "When the batch was completed" },
+    "total_duration_minutes": { "type": "number", "description": "Total duration in minutes" },
+    "phases": { "type": "array", "description": "List of phases the batch went through" }
+  },
+  "required": ["reactor_id"]
+}

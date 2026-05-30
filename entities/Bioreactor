@@ -1,0 +1,14 @@
+{
+  "name": "Bioreactor",
+  "type": "object",
+  "properties": {
+    "reactor_id": { "type": "string", "description": "Reactor identifier (R-01 to R-06)" },
+    "reactor_type": { "type": "string", "enum": ["industrial", "piloto"], "default": "industrial" },
+    "status": { "type": "string", "enum": ["idle", "disassembly", "cleaning", "water_sterilization", "cip", "dry_sterilization", "medium_sterilization", "in_process"], "default": "idle" },
+    "last_status": { "type": "string", "description": "Last active status before going idle" },
+    "batch_id": { "type": "string", "description": "Current batch identifier" },
+    "operator_name": { "type": "string", "description": "Current operator name" },
+    "phase_started_at": { "type": "string", "format": "date-time", "description": "When current phase started" }
+  },
+  "required": ["reactor_id"]
+}

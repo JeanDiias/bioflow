@@ -1,0 +1,13 @@
+{
+  "name": "ActivityLog",
+  "type": "object",
+  "properties": {
+    "reactor_id": { "type": "string", "description": "Which reactor this log belongs to" },
+    "action": { "type": "string", "description": "The action performed" },
+    "operator_name": { "type": "string", "description": "Who performed the action" },
+    "batch_id": { "type": "string", "description": "Related batch ID" },
+    "previous_status": { "type": "string", "description": "Status before the action" },
+    "new_status": { "type": "string", "description": "Status after the action" }
+  },
+  "required": ["reactor_id", "action", "operator_name"]
+}
