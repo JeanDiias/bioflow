@@ -168,6 +168,7 @@ export const api = {
     Bioreactor:   createEntityStore('Bioreactor'),
     BatchHistory: createEntityStore('BatchHistory'),
     ActivityLog:  createEntityStore('ActivityLog'),
+    PhaseLog:     createEntityStore('PhaseLog'),
   },
 
   auth: {

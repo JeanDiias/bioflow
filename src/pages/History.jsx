@@ -12,6 +12,14 @@ import ActivityTable from '@/components/history/ActivityTable';
 import { exportBatchPdf } from '@/lib/exportBatchPdf';
 
 export default function History() {
+  const handleExportPdf = async (batch) => {
+    const phaseLogs = await api.entities.PhaseLog.filter(
+      { batch_id: batch.batch_id, reactor_id: batch.reactor_id },
+      'started_at'
+    );
+    exportBatchPdf(batch, phaseLogs);
+  };
+
   const { data: batches, isLoading: loadingBatches } = useQuery({
     queryKey: ['batchHistory'],
     queryFn: () => api.entities.BatchHistory.list('-created_date', 50),
@@ -96,7 +104,7 @@ export default function History() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => exportBatchPdf(batch)}
+                          onClick={() => handleExportPdf(batch)}
                           className="h-8 px-2 text-muted-foreground hover:text-primary"
                           title="Exportar PDF"
                         >

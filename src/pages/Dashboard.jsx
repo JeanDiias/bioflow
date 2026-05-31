@@ -57,16 +57,32 @@ export default function Dashboard() {
       const now = new Date().toISOString();
       const operatorName = opName || user?.full_name || user?.email || 'Operador';
 
-      // If going to idle from in_process, save to batch history
-      if (newStatus === 'idle' && reactor.status === 'in_process') {
-        const start = new Date(reactor.phase_started_at);
-        const end = new Date(now);
-        const totalMin = Math.round((end - start) / 60000);
+      // Grava duração da fase que está ENCERRANDO (toda fase não-idle tem timestamp)
+      if (reactor.status !== 'idle' && reactor.phase_started_at) {
+        const phaseMin = Math.round((new Date(now) - new Date(reactor.phase_started_at)) / 60000);
+        await api.entities.PhaseLog.create({
+          reactor_id: reactor.reactor_id,
+          batch_id: reactor.batch_id || '',
+          phase: reactor.status,
+          started_at: reactor.phase_started_at,
+          ended_at: now,
+          duration_minutes: phaseMin,
+          operator_name: reactor.operator_name || operatorName,
+        });
+      }
+
+      // Se concluindo o processo (qualquer fase → idle com batch_id), salva no histórico
+      if (newStatus === 'idle' && reactor.batch_id) {
+        // Duração total = soma de todos os PhaseLogs deste batch (incluindo o que acabou de criar)
+        const allPhaseLogs = await api.entities.PhaseLog.filter({ batch_id: reactor.batch_id });
+        const totalMin = allPhaseLogs.reduce((acc, p) => acc + (p.duration_minutes || 0), 0);
         await api.entities.BatchHistory.create({
           reactor_id: reactor.reactor_id,
           batch_id: reactor.batch_id,
-          operator_name: reactor.operator_name,
-          started_at: reactor.phase_started_at,
+          operator_name: reactor.operator_name || operatorName,
+          started_at: allPhaseLogs.length > 0
+            ? allPhaseLogs.reduce((min, p) => p.started_at < min ? p.started_at : min, allPhaseLogs[0].started_at)
+            : reactor.phase_started_at,
           completed_at: now,
           total_duration_minutes: totalMin,
         });
@@ -107,6 +123,22 @@ export default function Dashboard() {
   const restartReactor = useMutation({
     mutationFn: async (reactor) => {
       const now = new Date().toISOString();
+
+      // Grava duração da fase interrompida antes de reiniciar
+      if (reactor.status !== 'idle' && reactor.phase_started_at) {
+        const phaseMin = Math.round((new Date(now) - new Date(reactor.phase_started_at)) / 60000);
+        await api.entities.PhaseLog.create({
+          reactor_id: reactor.reactor_id,
+          batch_id: reactor.batch_id || '',
+          phase: reactor.status,
+          started_at: reactor.phase_started_at,
+          ended_at: now,
+          duration_minutes: phaseMin,
+          operator_name: reactor.operator_name || user?.full_name || 'Operador',
+          interrupted: true,
+        });
+      }
+
       await api.entities.ActivityLog.create({
         reactor_id: reactor.reactor_id,
         action: 'Reator reiniciado manualmente',

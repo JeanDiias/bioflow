@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import {
   Droplets, Flame, FlaskConical, Circle, Loader2,
-  Wrench, Sparkles, RefreshCw, TestTube, CheckCircle2, User, RotateCcw, AlertTriangle
+  Wrench, Sparkles, RefreshCw, TestTube, CheckCircle2, User, RotateCcw, AlertTriangle, Clock
 } from 'lucide-react';
 import StatusIndicator from './StatusIndicator';
 import PhaseTimer from './PhaseTimer';
 import { cn } from '@/lib/utils';
 import { api } from '@/api/client';
 import { useQuery } from '@tanstack/react-query';
+import { STATUS_CONFIG, formatDurationMinutes } from '@/lib/reactorUtils';
 
 const ACTIONS = [
   { key: 'idle',               label: 'Ocioso',                      icon: Circle,     color: 'bg-slate-500/15 text-slate-400 border-slate-500/30 hover:bg-slate-500/25' },
@@ -41,6 +42,16 @@ export default function ReactorDrawer({ reactor, open, onClose, onChangePhase, o
     enabled: !!reactor && open,
   });
 
+  const { data: phaseLogs = [] } = useQuery({
+    queryKey: ['phaseLogs', reactor?.reactor_id, open],
+    queryFn: () => api.entities.PhaseLog.filter(
+      { reactor_id: reactor.reactor_id },
+      '-ended_at',
+      30
+    ),
+    enabled: !!reactor && open,
+  });
+
   if (!reactor) return null;
 
   // Logs chegam em ordem DESC (mais recente primeiro).
@@ -50,6 +61,12 @@ export default function ReactorDrawer({ reactor, open, onClose, onChangePhase, o
   const sessionLogs = lastIdleLog
     ? logs.filter(l => l.created_date > lastIdleLog.created_date)
     : logs;
+
+  // PhaseLog da sessão atual (após o último idle), em ordem cronológica
+  const sessionPhaseLogs = (lastIdleLog
+    ? phaseLogs.filter(p => p.ended_at > lastIdleLog.created_date)
+    : phaseLogs
+  ).slice().reverse();
 
   // Build set of statuses that have been used in this session (based on logs)
   const usedStatuses = new Set(sessionLogs.map(l => l.new_status).filter(Boolean));
@@ -121,6 +138,46 @@ export default function ReactorDrawer({ reactor, open, onClose, onChangePhase, o
               </div>
             )}
           </div>
+
+          {/* Linha do tempo da sessão atual */}
+          {sessionPhaseLogs.length > 0 && (
+            <div className="rounded-lg bg-secondary/30 border border-border/50 p-3 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <Clock className="w-3 h-3" />
+                Fases desta sessão
+              </div>
+              <div className="space-y-1">
+                {sessionPhaseLogs.map((pl, i) => {
+                  const cfg = STATUS_CONFIG[pl.phase];
+                  return (
+                    <div
+                      key={i}
+                      className={cn(
+                        'flex items-center justify-between rounded px-2 py-1 text-xs',
+                        cfg?.color || 'bg-secondary/50'
+                      )}
+                    >
+                      <span className={cn('font-medium', cfg?.textColor)}>
+                        {cfg?.label || pl.phase}
+                        {pl.interrupted && (
+                          <span className="ml-1.5 text-[10px] opacity-60">(interrompida)</span>
+                        )}
+                      </span>
+                      <span className="font-mono text-muted-foreground">
+                        {formatDurationMinutes(pl.duration_minutes)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-border/40 text-xs">
+                <span className="text-muted-foreground">Total acumulado</span>
+                <span className="font-mono font-semibold">
+                  {formatDurationMinutes(sessionPhaseLogs.reduce((s, p) => s + (p.duration_minutes || 0), 0))}
+                </span>
+              </div>
+            </div>
+          )}
 
           <Separator />
 
