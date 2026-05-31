@@ -29,3 +29,8 @@ dist-ssr
 
 .env
 .vite
+
+# RStudio
+.Rhistory
+.RData
+.Rproj.user
